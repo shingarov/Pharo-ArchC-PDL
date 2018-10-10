@@ -28,7 +28,9 @@ AC_ISA(sparc){
   ac_format Type_F3A    = "%op:2 %rd:5 %op3:6 %rs1:5 %is:1 %asi:8 %rs2:5";
   ac_format Type_F3B    = "%op:2 %rd:5 %op3:6 %rs1:5 %is:1 %simm13:13:s";
 /* format for trap instructions */
+/*
   ac_format Type_FT     = "%op:2 %r1:1 %cond:4 %op2a:6 %rs1:5 %is:1 [%r2a:8 %rs2:5 | %r2b:6 %imm7:7]";
+*/
 
   ac_instr<Type_F1>  call;
   ac_instr<Type_F2A> nop, sethi;
@@ -57,7 +59,9 @@ AC_ISA(sparc){
                      jmpl_imm, save_imm, restore_imm, rdy, wry_imm;
 
   ac_instr<Type_F2A> unimplemented;
+/*
   ac_instr<Type_FT>  trap_reg, trap_imm;
+*/
 
 
   ac_asm_map reg { 
@@ -701,6 +705,7 @@ AC_ISA(sparc){
     wry_imm.set_decoder(op=0x02, op3=0x30, is=0x01);
  //   wry_imm.set_cycles(1);
 
+/*
     trap_imm.set_asm("t%cond %imm", cond, imm7, r1=0);
     trap_imm.set_decoder(op=0x02, is=1, op2a=0x3A);
   //  trap_imm.set_cycles(1);
@@ -708,6 +713,7 @@ AC_ISA(sparc){
     trap_reg.set_asm("t%cond %reg", cond, rs2);
     trap_reg.set_decoder(op=0x02, is=0, op2a=0x3A);
    // trap_reg.set_cycles(1);
+*/
 
     unimplemented.set_asm("unimp %imm", imm22);
     unimplemented.set_decoder(op=0x00,rd=0x00,op2=0x00);
