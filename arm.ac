@@ -32,6 +32,8 @@ AC_ARCH(arm){
   ac_reg id;  
   ARCH_CTOR(arm) {
     ac_isa("arm_isa.ac");
+    ac_gdb("arm.xml");
+    defines_gdb("defines_gdb");
     set_endian("little");
   };
 };
