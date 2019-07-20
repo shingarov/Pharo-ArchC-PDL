@@ -45,6 +45,8 @@ AC_ARCH(sparc){
   ARCH_CTOR(sparc){
 
     ac_isa("sparc_isa.ac");
+    ac_gdb("sparc.xml");
+    defines_gdb("defines_gdb");
     set_endian("big");
   };
 };
