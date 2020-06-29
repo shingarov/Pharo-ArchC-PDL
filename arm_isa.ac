@@ -258,7 +258,7 @@ AC_ISA(arm) {
     
     add3.set_asm("add%[cond]%sf %reg, %reg, #%imm(aimm)", cond, s, rd, rn, rotate+imm8);
     // Pseudo instruction: ADR
-    add3.set_asm("adr%[cond]%sf %reg, %exp(pcrelrot)", cond, s, rd, func1+rotate+imm8, rn=reg.map_to("pc"));
+    //add3.set_asm("adr%[cond]%sf %reg, %exp(pcrelrot)", cond, s, rd, func1+rotate+imm8, rn=reg.map_to("pc"));
     add3.set_decoder(op=0x01, func1=0x04);
     
    // add3.set_cycles(1);
@@ -360,7 +360,7 @@ AC_ISA(arm) {
 
 
     mov1.set_asm("mov%[cond]%sf %reg, %reg", cond, s, rd, rm, rn=0, shiftamount=0, shift=0);
-    mov1.set_asm("mov r15, r14", cond=0xE, s=0, rd=0xF, rm=0xE, rn=0, shiftamount=0, shift=0);
+    mov1.set_asm("mov pc, lr", cond=0xE, s=0, rd=0xF, rm=0xE, rn=0, shiftamount=0, shift=0);
     mov1.set_asm("mov r0, r0", cond=0xE, s=0, rd=0x0, rm=0x0, rn=0, shiftamount=0, shift=0);
     mov1.set_asm("mov%[cond]%sf %reg, %reg, %shift #%imm", cond, s, rd, rm, shift, shiftamount, rn=0);
     mov1.set_asm("mov%[cond]%sf %reg, %reg, rrx", cond, s, rd, rm, shift=3, shiftamount=0, rn=0);
