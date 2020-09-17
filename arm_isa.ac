@@ -987,7 +987,7 @@ AC_ISA(arm) {
 //    msr1.set_asm("");
     msr1.set_decoder(op=0x00, subop1=0x00, subop2=0x00, func11=0x02, func12=0x02, zero3=0x00, func2=0x00);
 
-//    msr2.set_asm("");
+    msr2.set_asm("msr%[cond] APSR_nzcv, #%imm", cond, r=0, fieldmask=8, rotate=2, imm8);
     msr2.set_decoder(op=0x01, func11=0x02, func12=0x02, one2=0x0f);
     
 
