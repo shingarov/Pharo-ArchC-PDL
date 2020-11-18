@@ -56,9 +56,6 @@ AC_ISA(arm) {
   ac_format Type_MMSR1 = "%cond:4 %op:3 %func11:2 %r:1 %func12:2 %fieldmask:4 %rd:4 %zero3:4 %subop2:1 %func2:2 %subop1:1 %rm:4";
   ac_format Type_MMSR2 = "%cond:4 %op:3 %func11:2 %r:1 %func12:2 %fieldmask:4 %one2:4 %rotate:4 %imm8:8";
 
-  /* DSP multiply instructions */
-  ac_format Type_DSPSM = "%cond:4 %sm:8 %drd:4 %drn:4 %rs:4 %subop2:1 %yy:1 %xx:1 %subop1:1 %rm:4";
-
   /* Data processing instructions - ALU */
   ac_instr<Type_DPI1> and1, eor1, sub1, rsb1, add1, adc1, sbc1, rsc1, tst1, teq1, cmp1, cmn1, orr1, mov1, bic1, mvn1;
   ac_instr<Type_DPI2> and2, eor2, sub2, rsb2, add2, adc2, sbc2, rsc2, tst2, teq2, cmp2, cmn2, orr2, mov2, bic2, mvn2;
@@ -90,10 +87,6 @@ AC_ISA(arm) {
   ac_instr<Type_MCLZ> clz;
   ac_instr<Type_MMSR1> mrs, msr1;
   ac_instr<Type_MMSR2> msr2;
-  
-  /* DSP Instructions */
-  /* LSE Load/Store format has DSP instructions (ldrd and strd) */
-  ac_instr<Type_DSPSM> dsmla, dsmlal, dsmul, dsmlaw, dsmulw;
   
   /* ARM register aliases */
   ac_asm_map reg {
@@ -393,7 +386,7 @@ AC_ISA(arm) {
     mvn2.set_asm("mvn%[cond]%sf %reg, %reg, %shift %reg", cond, s, rd, rm, shift, rs, rn=0);
     mvn2.set_decoder(op=0x00, subop1=0x01, subop2=0x00, func1=0x0F);
 
-    mvn3.set_asm("mvn%[cond]%sf %reg, #%imm(aimm)", cond, s, rd, rotate+imm8, rn=0, rd=0);
+    mvn3.set_asm("mvn%[cond]%sf %reg, #%imm(aimm)", cond, s, rd, rotate+imm8, rn=0);
     mvn3.set_decoder(op=0x01, func1=0x0F);
 
 
@@ -1005,20 +998,6 @@ AC_ISA(arm) {
 //    strd.set_asm("");
     strd.set_decoder(op=0x00, subop1=0x01, subop2=0x01, ss=0x01, hh=0x01, l=0x00);
 
-//    dsmla.set_asm("");
-    dsmla.set_decoder(sm=0x10, subop2=1, subop1=0);
-
-//    dsmlal.set_asm("");
-    dsmlal.set_decoder(sm=0x14, subop2=1, subop1=0);
-
-//    dsmlaw.set_asm("");
-    dsmlaw.set_decoder(sm=0x12, subop2=1, xx=0, subop1=0);
-
-//    dsmul.set_asm("");
-    dsmul.set_decoder(sm=0x16, subop2=1, subop1=0);
-
-//    dsmulw.set_asm("");
-    dsmulw.set_decoder(sm=0x12, subop2=1, xx=1, subop1=0);
 
     /************************/
     /* Pseudo instructions  */
