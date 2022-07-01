@@ -1,12 +1,18 @@
 /*
-* @file		riscv_isa.cpp
-* @version	1.0
-* @author   Pavani Tripathi
+* @file         riscv_isa.cpp
+* @version      1.0
+* @author   Pavani Tripathi, Jan Vrany
 *
 * @date     May 2016
-* @brief 	The ArchC RISC-V functional model
+* @brief        The ArchC RISC-V functional model
 *
 * @source   http://people.eecs.berkeley.edu/~krste/papers/riscv-spec-2.0.pdf
+*
+* This file is has been refactored to use Pharo-ArchC [1] extensions to
+* allow reading instructions from riscv-opcodes [2].
+*
+* [1]: https://github.com/shingarov/Pharo-ArchC
+* [2]: https://github.com/riscv/riscv-opcodes
 */
 
 AC_ISA(riscv){
