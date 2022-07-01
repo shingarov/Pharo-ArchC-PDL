@@ -27,6 +27,14 @@ AC_ISA(riscv){
   ac_format Type_R4 =
     "%rs3:5 %funct2:2 %rs2:5 %rs1:5 %funct3:3 %rd:5 %opcode:7";
 
+  // For F and D extensions
+  ac_format Type_Rfd =
+    "%funct5:5 %fmt:2 %rs2:5 %rs1:5 %rm:3 %rd:5 %opcode:7";
+
+  // For F and D extensions
+  ac_format Type_R4fd =
+    "%rs3:5 %fmt:2 %rs2:5 %rs1:5 %rm:3 %rd:5 %opcode:7";
+
   ac_format Type_I =
     "%imm:12 %rs1:5 %funct3:3 %rd:5 %opcode:7";
 
@@ -91,8 +99,23 @@ AC_ISA(riscv){
     "ft"[8..11] = [28..31];
   }
 
+  // Floating point rounding mode
+  // See RISC-V Unprivileged ISA,
+  //     Section 11.2 Floating-Point Control and Status Register
+  ac_asm_map rm {
+    "rne"    = 0; // Round to Nearest, ties to Even
+    "rtz"    = 1; // Round towards Zero
+    "rdn"    = 2; // Round Down (towards −Inf)
+    "rup"    = 3; // Round Up (towards +Inf)
+    "rmm"    = 4; // Round to Nearest, ties to Max Magnitude
+    "inv101" = 5; // Invalid, reserved.
+    "inv110" = 6; // Invalid, reserved.
+    "dyn"    = 7; // In instruction’s rm field: selects dynamic rounding mode,
+                 // In Rounding Mode register: invalid.
+  }
+
   /*
-   * RV65G is shorthand for the IMAFDZicsr Zifencei
+   * RV64G is shorthand for the IMAFDZicsr Zifencei
    */
   _ac_riscv_opcodes("riscv-opcodes/opcodes-system");
   _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32i");
@@ -101,16 +124,15 @@ AC_ISA(riscv){
   _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32m");
   _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64m");
 
+  _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32f");
+  _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64f");
+
+  _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32d");
+  _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64d");
+
   /*
    * Not yet supported
    */
   // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32a");
   // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64a");
-
-  // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32f");
-  // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64f");
-
-  // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32d");
-  // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64d");
-
 };
