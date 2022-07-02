@@ -31,6 +31,10 @@ AC_ISA(riscv){
   ac_format Type_Rfd =
     "%funct5:5 %fmt:2 %rs2:5 %rs1:5 %rm:3 %rd:5 %opcode:7";
 
+  // For A extension
+  ac_format Type_Ra =
+    "%funct5_h3:3 %funct5_l2:2 %aqrl:2 %rs2:5 %rs1:5 %funct3:3 %rd:5 %opcode:7";
+
   // For F and D extensions
   ac_format Type_R4fd =
     "%rs3:5 %fmt:2 %rs2:5 %rs1:5 %rm:3 %rd:5 %opcode:7";
@@ -114,6 +118,16 @@ AC_ISA(riscv){
                  // In Rounding Mode register: invalid.
   }
 
+  // Ordering of atomic instructions
+  // See RISC-V Unprivileged ISA,
+  //     Section 8.1 Specifying Ordering of Atomic Instructions
+  ac_asm_map aqrl {
+     ""      = 0; // No additional ordering constraints imposed
+     ".rl"   = 1; // Atomic memory operation is treated as a release access
+     ".aq"   = 2; // Atomic memory operation is treated as an acquire access
+     ".aqrl" = 3; // The atomic memory operation is sequentially consistent
+  }
+
   /*
    * RV64G is shorthand for the IMAFDZicsr Zifencei
    */
@@ -130,9 +144,6 @@ AC_ISA(riscv){
   _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32d");
   _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64d");
 
-  /*
-   * Not yet supported
-   */
-  // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32a");
-  // _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64a");
+  _ac_riscv_opcodes("riscv-opcodes/opcodes-rv32a");
+  _ac_riscv_opcodes("riscv-opcodes/opcodes-rv64a");
 };
