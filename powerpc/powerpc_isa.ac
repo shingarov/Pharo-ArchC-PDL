@@ -160,9 +160,9 @@ AC_ISA(powerpc) {
                 subfc_, subfco, subfco_, subfe, subfe_, subfeo,
                 subfeo_;
 
-  ac_instr<D7> twi, tdi;
+  ac_instr<D7> twi;
 
-  ac_instr<X21> tw, td;
+  ac_instr<X21> tw;
 
 /*
 
@@ -1189,20 +1189,10 @@ AC_ISA(powerpc) {
     tw.set_decoder(opcd=31, xog=4);
     tw.set_cycles(1);
 
-    td.set_asm("td %imm, %reg, %reg", to, ra, rb);
-    td.set_asm("td%[trapcond] %reg, %reg", to, ra, rb);
-    td.set_decoder(opcd=31, xog=68);
-    td.set_cycles(1);
-
     twi.set_asm("twi %imm, %reg, %imm", to, ra, si);
     twi.set_asm("tw%[trapcond]i %reg, %imm", to, ra, si);
     twi.set_decoder(opcd=3);
     twi.set_cycles(1);
-
-    tdi.set_asm("tdi %imm, %reg, %imm", to, ra, si);
-    tdi.set_asm("td%[trapcond]i %reg, %imm", to, ra, si);
-    tdi.set_decoder(opcd=2);
-    tdi.set_cycles(1);
 
 
 /*******************************************************/
