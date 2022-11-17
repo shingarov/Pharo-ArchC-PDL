@@ -61,6 +61,11 @@ AC_ISA(powerpc64) {
   ac_instr<DS3> std, stdu;
   ac_instr<X8> stdx, stdux;
 
+  /*
+   * See Section 3.3.13.1 64-bit Fixed-Point Logical Instructions
+   */
+  ac_instr<X13> extsw;
+
   ISA_CTOR(powerpc64) {
 
     td.set_asm("td %imm, %reg, %reg", to, ra, rb);
@@ -103,6 +108,12 @@ AC_ISA(powerpc64) {
     stdux.set_decoder(opcd=31, xog=181);
     stdux.set_asm("stdux %reg, %reg, %reg", rs, ra, rb);
 
+    /*
+     * See Section 3.3.13.1 64-bit Fixed-Point Logical Instructions
+     */
+    extsw.set_decoder(opcd=31, xog=986);
+    extsw.set_asm("extsw %reg, %reg", ra, rs, rc=0);
+    extsw.set_asm("extsw. %reg, %reg", ra, rs, rc=1);
 
   }; // ISA_CTOR(powerpc64)
 
