@@ -19,6 +19,7 @@
  * @brief     The ArchC POWERPC functional model.
  * 
  * @attention Copyright (C) 2002-2006 --- The ArchC Team
+ *            Copyright (C) 2022-2022 --- LabWare
  * 
  * This program is free software; you can redistribute it and/or modify 
  * it under the terms of the GNU General Public License as published by 
@@ -100,7 +101,7 @@ AC_ISA(powerpc) {
 
   ac_instr<I1> b, ba, bl, bla;
 
-  ac_instr<B1> bc, bca, bcl, bcla;
+  ac_instr<B1> bc;
 
   ac_instr<SC1> sc;
 
@@ -214,6 +215,16 @@ AC_ISA(powerpc) {
     "lle", "lng" = 6;
     "lge", "lnl" = 5;
     "lgt"        = 1;
+  }
+
+  ac_asm_map aa {
+    ""  = 0;
+    "a" = 1;
+  }
+
+  ac_asm_map lk {
+    ""  = 0;
+    "l" = 1;
   }
 
 
@@ -361,22 +372,10 @@ AC_ISA(powerpc) {
     bla.set_decoder(opcd=18, aa=1, lk=1);
     bla.set_cycles(1); 
     
-    bc.set_asm("bc %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bc.set_decoder(opcd=16, aa=0, lk=0);
+    bc.set_asm("bc%[lk]%[aa] %imm, %exp, %addr(pcrel)", lk, aa, bo, bi, bd);
+    bc.set_decoder(opcd=16);
     bc.set_cycles(1); 
-    
-    bca.set_asm("bca %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bca.set_decoder(opcd=16, aa=1, lk=0);
-    bca.set_cycles(1); 
-    
-    bcl.set_asm("bcl %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bcl.set_decoder(opcd=16, aa=0, lk=1);
-    bcl.set_cycles(1); 
-    
-    bcla.set_asm("bcla %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bcla.set_decoder(opcd=16, aa=1, lk=1);
-    bcla.set_cycles(1); 
-    
+
     bcctr.set_asm("bctr", bo=0x14, bi=0, bh=0);
     bcctr.set_asm("bcctr %reg, %reg, %reg", bo, bi, bh);
     bcctr.set_decoder(opcd=19, xog=528, lk=0);
@@ -1212,18 +1211,6 @@ AC_ISA(powerpc) {
 
     bc.is_branch(ac_pc+(bd<<2));
     bc.cond(test_Branch_Cond(CR,CTR,bo,bi));
-
-    bca.is_branch(bd<<2);
-    bca.cond(test_Branch_Cond(CR,CTR,bo,bi));
-
-    bcl.is_branch(ac_pc+(bd<<2));
-    bcl.cond(test_Branch_Cond(CR,CTR,bo,bi));
-    bcl.behavior(LR.write(ac_pc+4););
-
-    bcla.is_branch(bd<<2);
-    bcla.cond(test_Branch_Cond(CR,CTR,bo,bi));
-    bcla.behavior(LR.write(ac_pc+4););
-
 
     bcctr.is_branch(CTR.read() & 0xFFFFFFFC);
     bcctr.cond(test_Branch_Cond(CR,CTR,bo,bi));
