@@ -19,6 +19,7 @@
  * @brief     The ArchC POWERPC functional model.
  * 
  * @attention Copyright (C) 2002-2006 --- The ArchC Team
+ *            Copyright (C) 2022-2022 --- LabWare
  * 
  * This program is free software; you can redistribute it and/or modify 
  * it under the terms of the GNU General Public License as published by 
@@ -42,7 +43,7 @@ AC_ISA(powerpc) {
 
   ac_format I1 = "%opcd:6 %li:24:s %aa:1 %lk:1";
 
-  ac_format B1 = "%opcd:6 %bo:5 %bi:5 %bd:14:s %aa:1 %lk:1";
+  ac_format B1 = "%opcd:6 %bo:5 %bi_cf:3 %bi_cb:2 %bd:14:s %aa:1 %lk:1";
 
   ac_format SC1 = "%opcd:6 0x00:5 0x00:5 0x00:4 %lev:7 0x00:3 0x01:1 0x00:1";
 
@@ -100,7 +101,7 @@ AC_ISA(powerpc) {
 
   ac_instr<I1> b, ba, bl, bla;
 
-  ac_instr<B1> bc, bca, bcl, bcla;
+  ac_instr<B1> bc;
 
   ac_instr<SC1> sc;
 
@@ -160,9 +161,9 @@ AC_ISA(powerpc) {
                 subfc_, subfco, subfco_, subfe, subfe_, subfeo,
                 subfeo_;
 
-  ac_instr<D7> twi, tdi;
+  ac_instr<D7> twi;
 
-  ac_instr<X21> tw, td;
+  ac_instr<X21> tw;
 
 /*
 
@@ -200,7 +201,7 @@ AC_ISA(powerpc) {
 
   ac_asm_map reg {
     /* default gas assembler uses numbers as register names */
-    ""[0..31] = [0..31];           
+    ""[0..31] = [0..31];
   }
 
   ac_asm_map trapcond {
@@ -216,6 +217,19 @@ AC_ISA(powerpc) {
     "lgt"        = 1;
   }
 
+  ac_asm_map aa {
+    ""  = 0;
+    "a" = 1;
+  }
+
+  ac_asm_map lk {
+    ""  = 0;
+    "l" = 1;
+  }
+
+  ac_asm_map ccr {
+    "cr"[0..7] = [0..7];
+  }
 
   ISA_CTOR(powerpc) {
 
@@ -361,22 +375,10 @@ AC_ISA(powerpc) {
     bla.set_decoder(opcd=18, aa=1, lk=1);
     bla.set_cycles(1); 
     
-    bc.set_asm("bc %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bc.set_decoder(opcd=16, aa=0, lk=0);
+    bc.set_asm("bc%[lk]%[aa] %imm, %exp, %addr(pcrel)", lk, aa, bo, bi_cb+bi_cf, bd);
+    bc.set_decoder(opcd=16);
     bc.set_cycles(1); 
-    
-    bca.set_asm("bca %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bca.set_decoder(opcd=16, aa=1, lk=0);
-    bca.set_cycles(1); 
-    
-    bcl.set_asm("bcl %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bcl.set_decoder(opcd=16, aa=0, lk=1);
-    bcl.set_cycles(1); 
-    
-    bcla.set_asm("bcla %imm, %exp, %addr(pcrel)", bo, bi, bd);
-    bcla.set_decoder(opcd=16, aa=1, lk=1);
-    bcla.set_cycles(1); 
-    
+
     bcctr.set_asm("bctr", bo=0x14, bi=0, bh=0);
     bcctr.set_asm("bcctr %reg, %reg, %reg", bo, bi, bh);
     bcctr.set_decoder(opcd=19, xog=528, lk=0);
@@ -1189,21 +1191,74 @@ AC_ISA(powerpc) {
     tw.set_decoder(opcd=31, xog=4);
     tw.set_cycles(1);
 
-    td.set_asm("td %imm, %reg, %reg", to, ra, rb);
-    td.set_asm("td%[trapcond] %reg, %reg", to, ra, rb);
-    td.set_decoder(opcd=31, xog=68);
-    td.set_cycles(1);
-
     twi.set_asm("twi %imm, %reg, %imm", to, ra, si);
     twi.set_asm("tw%[trapcond]i %reg, %imm", to, ra, si);
     twi.set_decoder(opcd=3);
     twi.set_cycles(1);
 
-    tdi.set_asm("tdi %imm, %reg, %imm", to, ra, si);
-    tdi.set_asm("td%[trapcond]i %reg, %imm", to, ra, si);
-    tdi.set_decoder(opcd=2);
-    tdi.set_cycles(1);
+    /*
+     * See Power ISA Version 3.1B, sections:
+     *  - C.2.3 Branch Mnemonics Incorporating Conditions
+     *  - 2.3.1 Condition Register
+     *
+     * Condition bits (bi_cg bitfield):
+     *
+     *  0...LT (The result is negative)
+     *  1...GT (The result is positive)
+     *  2...EQ (The result is zero)
+     *  3...SO (Summary Overflow)
+     *
+     * Condition under which is branch taken (bo bitfield)
+     *
+     * 0000z       Decrement the CTR, then branch if the decremented CTRM:63!=0 and CRBI=0
+     * 0001z       Decrement the CTR, then branch if the decremented CTRM:63=0 and CRBI=0
+     * 001at =0x4  Branch if CRBI=0
+     * 0100z       Decrement the CTR, then branch if the decremented CTRM:63!=0 and CRBI=1
+     * 0101z       Decrement the CTR, then branch if the decremented CTRM:63=0 and CRBI=1
+     * 011at =0xC  Branch if CRBI=1
+     * 1a00t       Decrement the CTR, then branch if the decremented CTRM:63≠0
+     * 1a01t       Decrement the CTR, then branch if the decremented CTRM:63=0
+     * 1z1zz       Branch always
+     *
+     * at=00 means no hint given
+     * z=0   should be ignored but some code expect it to be zero.
+     */
 
+     bc.set_asm("blt%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=0, bo=0xC);
+     bc.set_asm("blt%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=0, bo=0xC);
+
+     bc.set_asm("ble%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=1, bo=0x4);
+     bc.set_asm("ble%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=1, bo=0x4);
+
+     bc.set_asm("beq%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=2, bo=0xC);
+     bc.set_asm("beq%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=2, bo=0xC);
+
+     bc.set_asm("bge%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=0, bo=0x4);
+     bc.set_asm("bge%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=0, bo=0x4);
+
+     bc.set_asm("bgt%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=1, bo=0xC);
+     bc.set_asm("bgt%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=1, bo=0xC);
+
+     /* Following are here for completeness but commented out
+      * as in disassembly we prefer `bge` over `bnl`.
+      */
+     //bc.set_asm("bnl%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=0, bo=0x4);
+     //bc.set_asm("bnl%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=0, bo=0x4);
+
+     bc.set_asm("bne%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=2, bo=0x4);
+     bc.set_asm("bne%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=2, bo=0x4);
+
+     /* Following are here for completeness but commented out
+      * as in disassembly we prefer `ble` over `bng`.
+      */
+     //bc.set_asm("bng%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=1, bo=0x4);
+     //bc.set_asm("bng%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=1, bo=0x4);
+
+     bc.set_asm("bso%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=3, bo=0xC);
+     bc.set_asm("bso%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=3, bo=0xC);
+
+     bc.set_asm("bns%[lk]%[aa] %addr(pcrel)",       lk, aa, bd, bi_cf=0, bi_cb=3, bo=0x4);
+     bc.set_asm("bns%[lk]%[aa] %ccr, %addr(pcrel)", lk, aa, bi_cf, bd,   bi_cb=3, bo=0x4);
 
 /*******************************************************/
 /* Optional properties to optimize compiled simulation */
@@ -1222,18 +1277,6 @@ AC_ISA(powerpc) {
 
     bc.is_branch(ac_pc+(bd<<2));
     bc.cond(test_Branch_Cond(CR,CTR,bo,bi));
-
-    bca.is_branch(bd<<2);
-    bca.cond(test_Branch_Cond(CR,CTR,bo,bi));
-
-    bcl.is_branch(ac_pc+(bd<<2));
-    bcl.cond(test_Branch_Cond(CR,CTR,bo,bi));
-    bcl.behavior(LR.write(ac_pc+4););
-
-    bcla.is_branch(bd<<2);
-    bcla.cond(test_Branch_Cond(CR,CTR,bo,bi));
-    bcla.behavior(LR.write(ac_pc+4););
-
 
     bcctr.is_branch(CTR.read() & 0xFFFFFFFC);
     bcctr.cond(test_Branch_Cond(CR,CTR,bo,bi));
@@ -1282,31 +1325,6 @@ AC_ISA(powerpc) {
     pseudo_instr("slwi %reg, %reg, %imm") {
       "rlwinm %0, %1, %2, 0, 31-%2";
     }
-
-    pseudo_instr("ble %imm, %addr") {
-      "bc 0x4, %0*4+1, %1";
-    }
-
-    pseudo_instr("bne %imm, %addr") {
-      "bc 0x4, %0*4+2, %1";
-    }
-
-    pseudo_instr("bgt %imm, %addr") {
-      "bc 0xC, %0*4+1, %1";
-    }
-
-    pseudo_instr("blt %imm, %addr") {
-      "bc 0xC, %0*4, %1";
-    }
-
-    pseudo_instr("bge %imm, %addr") {
-      "bc 0x4, %0*4, %1";
-    }
-
-    pseudo_instr("beq %imm, %addr") {
-      "bc 0xC, %0*4+2, %1";
-    }
-
   };
 
 };
