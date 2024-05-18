@@ -148,6 +148,8 @@ AC_ISA(powerpc) {
 
   ac_instr<XL3> mcrf;
 
+  ac_instr<XL4> isync;
+
   ac_instr<XFX1> mfspr;
 
   ac_instr<XFX3> mtcrf;
@@ -1292,6 +1294,14 @@ AC_ISA(powerpc) {
     bclrl.is_branch(LR.read() & 0xFFFFFFFC);
     bclrl.cond(test_Branch_Cond(CR,CTR,bo,bi));
     bclrl.behavior(LR.write(ac_pc+4););
+
+/************************/
+/* Book II Instructions */
+/************************/
+
+    isync.set_asm("isync");
+    isync.set_decoder(opcd=19, xog=150);
+    isync.set_cycles(1); 
 
 
 /***************************************/
