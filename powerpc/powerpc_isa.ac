@@ -80,6 +80,7 @@ AC_ISA(powerpc) {
   ac_format X23 = "%opcd:6 0x00:5 %ra:5 %rb:5 %xog:10 0x00:1";
   ac_format X24 = "%opcd:6 0x00:5 0x00:5 0x00:5 %xog:10 0x00:1";
   ac_format X25 = "%opcd:6 0x00:5 0x00:5 %e:1 0x00:4 %xog:10 0x00:1";
+  ac_format X26 = "%opcd:6 0x00:4 %l:1 0x00:5 0x00:5 %xog:10 0x00:1";
 
   ac_format XL1 = "%opcd:6 %bt:5 %ba:5 %bb:5 %xog:10 0x00:1";
   ac_format XL2 = "%opcd:6 %bo:5 %bi:5 0x00:3 %bh:2 %xog:10 %lk:1";
@@ -141,6 +142,8 @@ AC_ISA(powerpc) {
   ac_instr<X16> cmp, cmpl;
 
   ac_instr<X18> mcrxr;
+
+  ac_instr<X26> sync;
 
   ac_instr<XL1> crand, crandc, creqv, crnand, crnor, cror, crorc, crxor;
 
@@ -1303,6 +1306,12 @@ AC_ISA(powerpc) {
     isync.set_decoder(opcd=19, xog=150);
     isync.set_cycles(1); 
 
+    sync.set_asm("sync %imm", l);
+    sync.set_asm("sync", l=0);
+    sync.set_asm("hwsync", l=0);
+    sync.set_asm("lwsync", l=1);
+    sync.set_decoder(opcd=31, xog=598);
+    sync.set_cycles(1); 
 
 /***************************************/
 /* Synthetic Instructions              */
