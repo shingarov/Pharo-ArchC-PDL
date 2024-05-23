@@ -124,7 +124,7 @@ AC_ISA(powerpc) {
 
   ac_instr<X3> lswi;
 
-  ac_instr<X6> mfcr;
+  ac_instr<X6> mfcr, mfmsr;
 
   ac_instr<X7> ande, ande_, andc, andc_, eqv, eqv_, nand, nand_,
                nor, nor_, ore, ore_, orc, orc_, slw, slw_, sraw,
@@ -138,6 +138,8 @@ AC_ISA(powerpc) {
   ac_instr<X12> srawi, srawi_;
 
   ac_instr<X13> cntlzw, cntlzw_, extsb, extsb_, extsh, extsh_;
+
+  ac_instr<X15> mtmsr;
 
   ac_instr<X16> cmp, cmpl;
 
@@ -770,6 +772,10 @@ AC_ISA(powerpc) {
     mfcr.set_decoder(opcd=31, xog=19);
    mfcr.set_cycles(1); 
 
+    mfmsr.set_asm("mfmsr %reg", rt);
+    mfmsr.set_decoder(opcd=31, xog=83);
+    mfmsr.set_cycles(1); 
+
     /* INCOMPLETE IMPLEMENTATION! */
     mfspr.set_asm("mfctr %imm", rt, sprf=0x120);
     mfspr.set_asm("mflr %imm", rt, sprf=0x100);
@@ -780,6 +786,10 @@ AC_ISA(powerpc) {
     mtcrf.set_asm("mtcrf %imm, %imm", xfm, rs);
     mtcrf.set_decoder(opcd=31, xog=144);
     mtcrf.set_cycles(1); 
+
+    mtmsr.set_asm("mtmsr %reg", rs);
+    mtmsr.set_decoder(opcd=31, xog=146);
+    mtmsr.set_cycles(1); 
 
     /* INCOMPLETE IMPLEMENTATION! */
     mtspr.set_asm("mtctr %imm", rs, sprf=0x120);
